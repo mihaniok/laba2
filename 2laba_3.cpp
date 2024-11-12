@@ -6,12 +6,12 @@
 using namespace std;
 
 struct Set {
-    int data[100];  // Array to store set elements
-    int size;       // Current size of the set
+    int data[100];  // Массив для хранения элементов множества
+    int size;       // Текущий размер множества
 
     Set() : size(0) {}
 
-    // Add an element with automatic sorting
+    // Добавление элемента с автоматической сортировкой
     void add(int value) {
         if (!contains(value)) {
             int i = size - 1;
@@ -24,7 +24,7 @@ struct Set {
         }
     }
 
-    // Check if an element exists
+    // Проверка наличия элемента
     bool contains(int value) const {
         for (int i = 0; i < size; i++) {
             if (data[i] == value) {
@@ -34,7 +34,7 @@ struct Set {
         return false;
     }
 
-    // Count common elements with another set
+    // Подсчет общих элементов с другим множеством
     int countIntersection(const Set& other) const {
         int count = 0;
         for (int i = 0; i < size; i++) {
@@ -45,7 +45,7 @@ struct Set {
         return count;
     }
 
-    // Print the set
+    // Вывод множества
     void print() const {
         cout << "{ ";
         for (int i = 0; i < size; i++) {
@@ -55,7 +55,7 @@ struct Set {
     }
 };
 
-// Function to find the pair of sets with the maximum number of common elements
+// Функция для нахождения пары множеств с максимальным количеством общих элементов
 void findMaxIntersection(Set sets[], int setCount) {
     int maxIntersection = 0;
     int set1Index = -1, set2Index = -1;
@@ -71,16 +71,16 @@ void findMaxIntersection(Set sets[], int setCount) {
         }
     }
 
-    // Output the result
+    // Вывод результата
     if (set1Index != -1 && set2Index != -1) {
-        cout << "Maximum number of common elements: " << maxIntersection << endl;
-        cout << "Sets with the maximum intersection: ";
+        cout << "Максимальное количество общих элементов: " << maxIntersection << endl;
+        cout << "Множества с максимальным пересечением: ";
         sets[set1Index].print();
-        cout << " and ";
+        cout << " и ";
         sets[set2Index].print();
         cout << endl;
     } else {
-        cout << "No intersections between sets." << endl;
+        cout << "Пересечений между множествами нет." << endl;
     }
 }
 
@@ -89,14 +89,14 @@ int main() {
     Set sets[MAX_SETS];
     int setCount = 0;
 
-    cout << "Enter the number of sets: ";
+    cout << "Введите количество множеств: ";
     cin >> setCount;
-    cin.ignore(); // ignore newline after set count input
+    cin.ignore(); // игнорируем перевод строки после ввода количества множеств
     if (setCount > MAX_SETS) setCount = MAX_SETS;
 
-    // Enter the sets
+    // Ввод множеств
     for (int i = 0; i < setCount; i++) {
-        cout << "Enter elements for set #" << i + 1 << ": ";
+        cout << "Введите элементы для множества #" << i + 1 << ": ";
         string line;
         while (true) {
             getline(cin, line);
@@ -109,7 +109,7 @@ int main() {
         }
     }
 
-    // Find and display pairs with maximum intersection
+    // Нахождение и вывод пары с максимальным пересечением
     findMaxIntersection(sets, setCount);
 
     return 0;
