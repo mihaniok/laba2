@@ -100,14 +100,18 @@ void processCommand(Set &s, const string &commandLine) {
         int value = stoi(commandLine.substr(7));
         s.remove(value);
     } else if (commandLine.find("SET_AT") == 0) {
-        int value = stoi(commandLine.substr(9));
-        cout << (s.contains(value) ? "Yes" : "No") << endl;
+        if (commandLine.length() > 7) { 
+            int value = stoi(commandLine.substr(7));
+            cout << (s.contains(value) ? "Yes" : "No") << endl;
+        }
     } else if (commandLine == "PRINT") {
         s.print();
     } else if (commandLine == "SAVE") {
         s.saveToFile();
     } else if (commandLine == "LOAD") {
         s.loadFromFile();
+    } else {
+        cout << "Unknown command." << endl;
     }
 }
 
