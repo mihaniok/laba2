@@ -21,7 +21,6 @@ struct Set {
             }
             data[i + 1] = value;
             size++;
-            saveToFile();  // записываем обновленное множество в файл
         }
     }
 
@@ -39,7 +38,6 @@ struct Set {
                 data[i] = data[i + 1];
             }
             size--;
-            saveToFile();  // записываем обновленное множество в файл
         }
     }
 
@@ -70,8 +68,25 @@ struct Set {
                 outFile << data[i] << " ";
             }
             outFile.close();
+            cout << "Set saved to file." << endl;
         } else {
             cout << "Error opening file for writing!" << endl;
+        }
+    }
+
+    // Загрузка множества из файла
+    void loadFromFile() {
+        ifstream inFile("set_data.txt");
+        if (inFile.is_open()) {
+            size = 0;  // сбрасываем размер перед загрузкой
+            int value;
+            while (inFile >> value) {
+                add(value);  // добавляем элементы с сортировкой
+            }
+            inFile.close();
+            cout << "Set loaded from file." << endl;
+        } else {
+            cout << "Error opening file for reading!" << endl;
         }
     }
 };
@@ -89,6 +104,10 @@ void processCommand(Set &s, const string &commandLine) {
         cout << (s.contains(value) ? "Yes" : "No") << endl;
     } else if (commandLine == "PRINT") {
         s.print();
+    } else if (commandLine == "SAVE") {
+        s.saveToFile();
+    } else if (commandLine == "LOAD") {
+        s.loadFromFile();
     }
 }
 
