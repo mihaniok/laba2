@@ -4,8 +4,11 @@
 #include <sstream>
 #include <cctype>
 #include <stdexcept>
+#include <limits>
 
 using namespace std;
+
+const int MAX_ALLOWED_VALUE = 2000000000;
 
 // Узел для стека
 struct Node {
@@ -17,18 +20,16 @@ struct Node {
 
 // Стек для значений и операторов
 struct Stack {
-    Node* top;  // Указатель на вершину стека
+    Node* top;
 
     Stack() : top(nullptr) {}
 
-    // Добавление элемента на вершину стека
     void push(int value) {
         Node* newNode = new Node(value);
         newNode->next = top;
         top = newNode;
     }
 
-    // Удаление элемента с вершины стека
     void pop() {
         if (top == nullptr) {
             throw runtime_error("Стек пуст, нечего удалять!");
@@ -38,7 +39,6 @@ struct Stack {
         delete temp;
     }
 
-    // Получение значения с вершины стека
     int peek() const {
         if (top == nullptr) {
             throw runtime_error("Стек пуст!");
@@ -46,24 +46,20 @@ struct Stack {
         return top->data;
     }
 
-    // Проверка пустоты стека
     bool isEmpty() const {
         return top == nullptr;
     }
 
-    // Очистка стека
     void clear() {
         while (!isEmpty()) {
             pop();
         }
     }
 
-    // Деструктор
     ~Stack() {
-        clear();  // Освобождаем память при удалении стека
+        clear();
     }
 
-    // Вывод всех элементов стека
     void print() const {
         if (top == nullptr) {
             cout << "Стек пуст!" << endl;
@@ -77,7 +73,6 @@ struct Stack {
         cout << endl;
     }
 
-    // Запись стека в файл
     void saveToFile(const string &filename) const {
         ofstream outFile(filename);
         if (outFile.is_open()) {
@@ -93,13 +88,12 @@ struct Stack {
         }
     }
 
-    // Загрузка стека из файла
     void loadFromFile(const string &filename) {
         ifstream inFile(filename);
         if (inFile.is_open()) {
             int value;
             while (inFile >> value) {
-                push(value);  // добавляем элементы в стек
+                push(value);
             }
             inFile.close();
             cout << "Стек загружен из файла " << filename << endl;
@@ -109,35 +103,38 @@ struct Stack {
     }
 };
 
-// Определение приоритета операций
 int precedence(char op) {
     if (op == '+' || op == '-') return 1;
     if (op == '*' || op == '/') return 2;
     return 0;
 }
 
-// Функция вычисления выражения
+// Функция вычисления операций с проверкой на большие числа
 int applyOp(int a, int b, char op) {
+    int result = 0;
     switch (op) {
-        case '+': return a + b;
-        case '-': return a - b;
-        case '*': return a * b;
+        case '+': result = a + b; break;
+        case '-': result = a - b; break;
+        case '*': 
+            if (abs(a) > MAX_ALLOWED_VALUE / abs(b)) throw runtime_error("Результат превышает допустимое значение!");
+            result = a * b;
+            break;
         case '/':
             if (b == 0) throw runtime_error("Деление на ноль!");
-            return a / b;
+            result = a / b;
+            break;
     }
-    return 0;
+    if (abs(result) > MAX_ALLOWED_VALUE) throw runtime_error("Результат превышает допустимое значение!");
+    return result;
 }
 
 // Функция вычисления выражения
 int evaluateExpression(const string &expression) {
-    Stack values; // Стек для значений
-    Stack ops;    // Стек для операторов
+    Stack values;
+    Stack ops;
 
     for (size_t i = 0; i < expression.length(); i++) {
-        if (isspace(expression[i])) {
-            continue; // Игнорируем пробелы
-        }
+        if (isspace(expression[i])) continue;
 
         if (isdigit(expression[i])) {
             int val = 0;
@@ -145,8 +142,9 @@ int evaluateExpression(const string &expression) {
                 val = (val * 10) + (expression[i] - '0');
                 i++;
             }
+            if (val > MAX_ALLOWED_VALUE) throw runtime_error("Число превышает допустимое значение!");
             values.push(val);
-            i--; // Уменьшаем i, чтобы не пропустить следующий символ
+            i--;
         } else if (expression[i] == '(') {
             ops.push(expression[i]);
         } else if (expression[i] == ')') {
@@ -156,7 +154,7 @@ int evaluateExpression(const string &expression) {
                 char op = ops.peek(); ops.pop();
                 values.push(applyOp(val1, val2, op));
             }
-            ops.pop(); // Удаляем '('
+            ops.pop();
         } else {
             while (!ops.isEmpty() && precedence(ops.peek()) >= precedence(expression[i])) {
                 int val2 = values.peek(); values.pop();
@@ -218,23 +216,11 @@ int main() {
 
     while (true) {
         getline(cin, commandLine);
-
         if (commandLine == "EXIT") {
-            break;  // выход из программы
+            break;
         }
-
-        processCommand(stack, commandLine);  // обработка команды
+        processCommand(stack, commandLine);
     }
 
     return 0;
 }
-
-/*
-PUSH <value> — добавляет элемент на вершину стека.
-POP — удаляет элемент с вершины стека.
-PRINT — выводит все элементы стека.
-SAVE <filename> — сохраняет стек в файл.
-LOAD <filename> — загружает стек из файла.
-SOLVE <expression> — вычисляет числовое выражение.
-EXIT — завершает выполнение программы.
-*/
