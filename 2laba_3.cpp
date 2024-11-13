@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <fstream>
 
 using namespace std;
 
@@ -24,12 +23,14 @@ struct Set {
         }
     }
 
-    // Проверка наличия элемента
+    // Проверка наличия элемента (быстрый поиск в отсортированном массиве)
     bool contains(int value) const {
-        for (int i = 0; i < size; i++) {
-            if (data[i] == value) {
-                return true;
-            }
+        int left = 0, right = size - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (data[mid] == value) return true;
+            else if (data[mid] < value) left = mid + 1;
+            else right = mid - 1;
         }
         return false;
     }
