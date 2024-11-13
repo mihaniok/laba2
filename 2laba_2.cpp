@@ -4,49 +4,62 @@
 
 using namespace std;
 
-struct Set {
-    int data[100];  // массив для хранения элементов множества
-    int size;       // текущий размер множества
+const int TABLE_SIZE = 101;  
+const int EMPTY = -1;        
+const int DELETED = -2;     
 
-    Set() : size(0) {}
+struct HashSet {
+    int table[TABLE_SIZE];  // Хеш-таблица для хранения элементов
+    int size;               // Количество элементов в множестве
 
-    // Добавление элемента с автоматической сортировкой
-    void add(int value) {
-        if (!contains(value)) {
-            int i = size - 1;
-            // Находим позицию для вставки, сдвигая элементы вправо
-            while (i >= 0 && data[i] > value) {
-                data[i + 1] = data[i];
-                i--;
-            }
-            data[i + 1] = value;
-            size++;
+    HashSet() : size(0) {
+        // Инициализация пустыми значениями
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            table[i] = EMPTY;
         }
+    }
+
+    // Хеш-функция
+    int hash(int value) const {
+        return (value % TABLE_SIZE + TABLE_SIZE) % TABLE_SIZE;
+    }
+
+    // Добавление элемента
+    void add(int value) {
+        if (contains(value)) return;  
+        int index = hash(value);
+        int startIndex = index;
+        while (table[index] != EMPTY && table[index] != DELETED) {
+            index = (index + 1) % TABLE_SIZE;  
+            if (index == startIndex) return;   
+        }
+        table[index] = value;
+        size++;
     }
 
     // Удаление элемента
     void remove(int value) {
-        int pos = -1;
-        for (int i = 0; i < size; i++) {
-            if (data[i] == value) {
-                pos = i;
-                break;
+        int index = hash(value);
+        int startIndex = index;
+        while (table[index] != EMPTY) {
+            if (table[index] == value) {
+                table[index] = DELETED;
+                size--;
+                return;
             }
-        }
-        if (pos != -1) {
-            for (int i = pos; i < size - 1; i++) {
-                data[i] = data[i + 1];
-            }
-            size--;
+            index = (index + 1) % TABLE_SIZE;
+            if (index == startIndex) return;
         }
     }
 
     // Проверка наличия элемента
     bool contains(int value) const {
-        for (int i = 0; i < size; i++) {
-            if (data[i] == value) {
-                return true;
-            }
+        int index = hash(value);
+        int startIndex = index;
+        while (table[index] != EMPTY) {
+            if (table[index] == value) return true;
+            index = (index + 1) % TABLE_SIZE;
+            if (index == startIndex) break;
         }
         return false;
     }
@@ -54,8 +67,10 @@ struct Set {
     // Вывод множества
     void print() const {
         cout << "Set: ";
-        for (int i = 0; i < size; i++) {
-            cout << data[i] << " ";
+        for (int i = 0; i < TABLE_SIZE; i++) {
+            if (table[i] != EMPTY && table[i] != DELETED) {
+                cout << table[i] << " ";
+            }
         }
         cout << endl;
     }
@@ -64,8 +79,10 @@ struct Set {
     void saveToFile() const {
         ofstream outFile("set_data.txt");
         if (outFile.is_open()) {
-            for (int i = 0; i < size; i++) {
-                outFile << data[i] << " ";
+            for (int i = 0; i < TABLE_SIZE; i++) {
+                if (table[i] != EMPTY && table[i] != DELETED) {
+                    outFile << table[i] << " ";
+                }
             }
             outFile.close();
             cout << "Set saved to file." << endl;
@@ -78,10 +95,13 @@ struct Set {
     void loadFromFile() {
         ifstream inFile("set_data.txt");
         if (inFile.is_open()) {
-            size = 0;  // сбрасываем размер перед загрузкой
+            size = 0;
+            for (int i = 0; i < TABLE_SIZE; i++) {
+                table[i] = EMPTY;
+            }
             int value;
             while (inFile >> value) {
-                add(value);  // добавляем элементы с сортировкой
+                add(value);
             }
             inFile.close();
             cout << "Set loaded from file." << endl;
@@ -92,7 +112,7 @@ struct Set {
 };
 
 // Обработка команд
-void processCommand(Set &s, const string &commandLine) {
+void processCommand(HashSet &s, const string &commandLine) {
     if (commandLine.find("SETADD") == 0) {
         int value = stoi(commandLine.substr(7));
         s.add(value);
@@ -116,7 +136,7 @@ void processCommand(Set &s, const string &commandLine) {
 }
 
 int main() {
-    Set s;
+    HashSet s;
     string commandLine;
 
     while (true) {
